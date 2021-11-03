@@ -7,8 +7,12 @@ import {
   addEventListener,
   isObject,
 } from "@lsky/tools"
-import axios from "axios"
-import format from "string-format"
+import {
+  transformToProps,
+  fetchData,
+  getValueByKeys,
+  getNodeByKeys,
+} from "@lsky/cake-util"
 import Container from "./components/container"
 import Image from "./components/image"
 import Text from "./components/text"
@@ -18,6 +22,8 @@ const ComponentMap = {
   Image,
   Text,
 }
+
+export { transformToProps, getValueByKeys, getNodeByKeys }
 
 // 每个node字段
 // node: {
@@ -35,7 +41,7 @@ const ComponentMap = {
 //   match: String,   // 请注意：该字段用于服务端，表示匹配参数
 // }
 
-const updateFetchDataToNode = (fetchData, pos, nodes) => {
+const updateFetchDataToNode = (fd, pos, nodes) => {
   if (isEmpty(nodes) || isEmpty(pos)) return nodes
   const position = pos.split("-")
   let p = position.shift()
@@ -52,108 +58,9 @@ const updateFetchDataToNode = (fetchData, pos, nodes) => {
     obtain(r, "type") === "fetch" ||
     obtain(r, "_props", []).find((v) => v.type === "fetch")
   ) {
-    r.requestData = fetchData
+    r.requestData = fd
   }
   return nodes
-}
-
-const fetchData = (node) => {
-  const { value, payload, options } = node
-  let { url } = options
-  const { data } = options
-  switch (payload) {
-    case "stringFormat":
-      url = format(url, value)
-      break
-    case "query":
-      // eslint-disable-next-line no-case-declarations
-      const query = [`${node.key}=${value}`]
-      if (!isEmpty(data)) {
-        Object.keys(data).forEach((key) => {
-          query.push(`${key}=${data[key]}`)
-        })
-      }
-      url = `${url}?${query.join("&")}`
-      break
-    case "data":
-      break
-    default:
-      break
-  }
-  options.url = url
-  return axios(options)
-}
-
-export const transformToProps = (node) => {
-  const result = {}
-  if (node.type === "fetch") {
-    return result
-  }
-  if (!isEmpty(node.value)) {
-    result[obtain(node, "propsName", node.key)] = node.value
-    return result
-  }
-  if (isArray(node._props)) {
-    node._props.forEach((n) => {
-      if (!isEmpty(n.value) && n.type !== "fetch") {
-        if (n.type === "style") {
-          // style 将会组合集合 style
-          const s = obtain(result, "style", {})
-          s[n.key] = n.value
-          result.style = s
-        } else {
-          result[obtain(n, "propsName", n.key)] = n.value
-        }
-      }
-    })
-  }
-  return result
-}
-
-export function getNodeByKeys(key, data) {
-  if (isEmpty(key) || isEmpty(data)) return null
-  const keys = key.split(".")
-  let d = data
-  let k = null
-  while (!isEmpty(keys)) {
-    k = keys.shift()
-    // eslint-disable-next-line no-loop-func
-    const n = d && d.find((v) => v.key === k)
-    d = n
-    if (!isEmpty(keys)) {
-      d = obtain(d, "children")
-    }
-  }
-
-  if (obtain(d, "key") === k) {
-    return d
-  }
-  return null
-}
-
-export function getValueByKeys(key, data, defaultValue = {}) {
-  if (isEmpty(key) || isEmpty(data)) return defaultValue
-  const d = getNodeByKeys(key, data)
-  if (!isEmpty(d)) {
-    const result = transformToProps(d)
-    // 如果 node.type === fetch
-    // 特殊处理
-    if (obtain(d, "type") === "fetch") {
-      result[obtain(d, "propsName", d.key)] = obtain(
-        d,
-        "requestData",
-        obtain(defaultValue, obtain(d, "propsName", d.key))
-      )
-    }
-    if (obtain(d, "_props", []).find((v) => v.type === "fetch")) {
-      const _p = obtain(d, "_props", []).find((v) => v.type === "fetch")
-      const pn = obtain(_p, "propsName", _p.key)
-      const requestData = obtain(d, "requestData", obtain(defaultValue, pn))
-      result[pn] = requestData
-    }
-    return result
-  }
-  return {}
 }
 
 function MapNode({ data }) {

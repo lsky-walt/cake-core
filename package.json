@@ -1,6 +1,6 @@
 {
   "name": "@lsky/cake-core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "./lib/index.js",
   "license": "MIT",
   "repository": "https://github.com/lsky-walt/cake-core",
@@ -55,6 +55,7 @@
     "webpack-merge": "^5.0.9"
   },
   "dependencies": {
+    "@lsky/cake-util": "^0.0.5",
     "@lsky/tools": "^1.0.0",
     "axios": "^0.24.0",
     "react": "^17.0.2",
