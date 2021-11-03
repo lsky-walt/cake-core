@@ -42,6 +42,12 @@ module.exports = merge(
         commonjs: "prop-types",
         amd: "prop-types",
       },
+      axios: {
+        root: "axios",
+        commonjs2: "axios",
+        commonjs: "axios",
+        amd: "axios",
+      },
     },
     plugins: [new CleanWebpackPlugin()],
   },
