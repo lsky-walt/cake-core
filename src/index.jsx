@@ -88,7 +88,11 @@ function GeneNode(props) {
   if (!Render) {
     Render = Container
   }
-  const child = [obtain(data, "value", null)]
+  const child = []
+
+  if (!isEmpty(obtain(data, "value", null))) {
+    child.push(obtain(data, "value", null))
+  }
 
   if (obtain(_props, "children")) {
     const { children, ...p } = _props
@@ -99,6 +103,9 @@ function GeneNode(props) {
   if (!isEmpty(data.children) && isEmpty(obtain(_props, "children"))) {
     child.push(<MapNode key="children_node" data={data.children} />)
   }
+  if (isEmpty(child)) {
+    return <Render key={data.key} {..._props} />
+  }
 
   return (
     <Render key={data.key} {..._props}>
@@ -108,7 +115,8 @@ function GeneNode(props) {
 }
 
 // 拥有 createNode
-export function CreateNode({ data }) {
+export function CreateNode(props) {
+  const data = obtain(props, "data")
   if (isEmpty(data)) {
     return null
   }
