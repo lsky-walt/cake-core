@@ -71,16 +71,18 @@ function MapNode({ data }) {
         obtain(node, "type", "fetch") !== "fetch" &&
         obtain(node, "type", "fetch") !== "style"
     )
-    .map((node) => <GenerateNode key={node.key} data={node} />)
+    .map((node) => <GeneNode key={node.key} data={node} />)
 }
 
 // 生成 render
-function GenerateNode({ data }) {
+function GeneNode(props) {
+  const data = obtain(props, "data")
+  if (isEmpty(data)) return null
   let Render = ComponentMap[data.type]
-  let props = transformToProps(data)
+  let _props = transformToProps(data)
   if (obtain(data, "type", "fetch") === "fetch") {
     Render = React.Fragment
-    props = {}
+    _props = {}
   }
   // 如果 Render 为空，则统一用 Container
   if (!Render) {
@@ -88,18 +90,18 @@ function GenerateNode({ data }) {
   }
   const child = [obtain(data, "value", null)]
 
-  if (obtain(props, "children")) {
-    const { children, ...p } = props
-    props = p
+  if (obtain(_props, "children")) {
+    const { children, ...p } = _props
+    _props = p
     child.push(children)
   }
 
-  if (!isEmpty(data.children) && isEmpty(obtain(props, "children"))) {
+  if (!isEmpty(data.children) && isEmpty(obtain(_props, "children"))) {
     child.push(<MapNode key="children_node" data={data.children} />)
   }
 
   return (
-    <Render key={data.key} {...props}>
+    <Render key={data.key} {..._props}>
       {child}
     </Render>
   )
@@ -114,7 +116,7 @@ export function CreateNode({ data }) {
     return <MapNode data={data} />
   }
   if (isObject(data)) {
-    return <GenerateNode key={data.key} data={data} />
+    return <GeneNode key={data.key} data={data} />
   }
   return null
 }
