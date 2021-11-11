@@ -8,10 +8,11 @@ module.exports = merge(
   {},
   {
     entry: {
-      index: "./src/index.jsx",
+      cake: "./src/index.jsx",
+      tools: "./src/tools.js",
     },
     output: {
-      filename: "cake.core.min.js",
+      filename: "[name].core.min.js",
       libraryTarget: "umd",
       path: path.resolve(__dirname, "../dist/"),
     },

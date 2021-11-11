@@ -7,12 +7,7 @@ import {
   addEventListener,
   isObject,
 } from "@lsky/tools"
-import {
-  transformToProps,
-  fetchData,
-  getValueByKeys,
-  getNodeByKeys,
-} from "@lsky/cake-util"
+import { transformToProps, getValueByKeys, getNodeByKeys } from "./tools"
 import Container from "./components/container"
 import Image from "./components/image"
 import Text from "./components/text"
@@ -25,65 +20,17 @@ const ComponentMap = {
 
 export { transformToProps, getValueByKeys, getNodeByKeys }
 
-// 每个node字段
-// node: {
-//   key: String,
-//   title: String,
-//   _props: Array,
-//   children: Array,
-//   value: string | number | boolean,
-//   type: fetch | static | style | string,  类型， TODO: type === undefined 则为修改；type = fetch 表示请求； type = style, 将会组成一个集合 style； type = static 表示静态数据，value值将有服务端生成，不展示在cake中； type 是其他，则代表组件或者html tag
-//   propsName: String,  // 指定 propsName，便于替换
-//   requestData: object, // fetch 返回的数据
-//   payload: stringFormat | query | data, // stringFormat => 使用 string-format 格式化，详见：string-format； query => url query； data => request data
-//   options: {},   // 请参照 axios 请求参数，该参数仅用于 type = fetch
-//   path: String,    // 请注意：此字段用于服务端，表示相对于根路径，文件路径，将会根据匹配值替换
-//   match: String,   // 请注意：该字段用于服务端，表示匹配参数
-// }
-
-const updateFetchDataToNode = (fd, pos, nodes) => {
-  if (isEmpty(nodes) || isEmpty(pos)) return nodes
-  const position = pos.split("-")
-  let p = position.shift()
-  let r = nodes
-  while (!isEmpty(position)) {
-    p = +position.shift()
-    r = r[p]
-    if (!isEmpty(position)) {
-      r = r.children
-    }
-  }
-
-  if (
-    obtain(r, "type") === "fetch" ||
-    obtain(r, "_props", []).find((v) => v.type === "fetch")
-  ) {
-    r.requestData = fd
-  }
-  return nodes
-}
-
 function MapNode({ data }) {
-  return data
-    .filter(
-      (node) =>
-        // 所有 type 不为空，或者是 type 不等于 fetch 和 style
-        obtain(node, "type", "fetch") !== "fetch" &&
-        obtain(node, "type", "fetch") !== "style"
-    )
-    .map((node) => <GeneNode key={node.key} data={node} />)
+  return data.map((node) => <GeneNode key={node.key} data={node} />)
 }
 
 // 生成 render
+// 通过 tag 映射组件
 function GeneNode(props) {
   const data = obtain(props, "data")
   if (isEmpty(data)) return null
-  let Render = ComponentMap[data.type]
+  let Render = ComponentMap[data.tag]
   let _props = transformToProps(data)
-  if (obtain(data, "type", "fetch") === "fetch") {
-    Render = React.Fragment
-    _props = {}
-  }
   // 如果 Render 为空，则统一用 Container
   if (!Render) {
     Render = Container
@@ -147,22 +94,6 @@ export class Init extends React.Component {
         //   type: "cake",
         //   data: [Node]
         // }
-        const { options } = event.data
-        if (options && !isEmpty(options)) {
-          fetchData(options)
-            .then((res) => {
-              const d = updateFetchDataToNode(
-                res.data,
-                options.pos,
-                event.data.data
-              )
-              this.setState({ data: d })
-            })
-            .catch((err) => {
-              this.setState({ data: event.data.data })
-            })
-          return
-        }
         this.setState({
           data: event.data.data,
         })

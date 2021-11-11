@@ -1,11 +1,20 @@
 {
   "name": "@lsky/cake-core",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "./lib/index.js",
   "license": "MIT",
   "repository": "https://github.com/lsky-walt/cake-core",
   "author": "lsky_walt <lsky_walt@163.com>",
+  "watch": {
+    "babel": {
+      "patterns": [
+        "src"
+      ],
+      "extensions": "js,jsx"
+    }
+  },
   "scripts": {
+    "watch": "npm-watch",
     "start": "webpack-dev-server --config ./webpack/webpack.dev.config.js",
     "babel": "cross-env NODE_ENV=publish babel src --out-dir lib",
     "dist": "webpack --config ./webpack/webpack.prod.config.js",
@@ -58,6 +67,7 @@
     "@lsky/cake-util": "^0.0.5",
     "@lsky/tools": "^1.0.0",
     "axios": "^0.24.0",
+    "npm-watch": "^0.11.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "string-format": "^2.0.0"
