@@ -1,6 +1,6 @@
 import React from "react"
 
 // 文本
-export default function Text({ children, ...attr }) {
-  return <p {...attr}>{children}</p>
+export default function Text({ text, ...attr }) {
+  return <p {...attr}>{text}</p>
 }

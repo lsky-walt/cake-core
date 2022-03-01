@@ -1,0 +1,16 @@
+.common_module_image_pc, .common_module_image_mobile {
+  width: 100%;
+}
+
+.common_module_image_mobile {
+  display: none;
+}
+
+@media screen and (max-width: 768px) {
+  .common_module_image_mobile {
+    display: initial;
+  }
+  .common_module_image_pc {
+    display: none;
+  }
+}
